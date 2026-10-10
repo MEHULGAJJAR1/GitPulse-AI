@@ -1,0 +1,16 @@
+# Runtime dependencies for the API, the ELT pipeline and the ML analytics (one shared venv).
+# Versions match the environment these tests were executed in (Python 3.13).
+fastapi==0.143.0
+uvicorn[standard]==0.54.0
+sqlalchemy==2.1.4
+psycopg[binary]==3.3.6
+alembic==1.20.0
+pydantic==2.14.0
+pydantic-settings==2.15.0
+python-dotenv==1.2.4
+httpx==0.28.1
+pandas==3.0.6
+numpy==2.5.3
+scipy==1.18.1
+scikit-learn==1.9.1
+statsmodels==0.15.0

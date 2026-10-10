@@ -1,0 +1,48 @@
+# GitPulse stack: PostgreSQL + FastAPI API (runs migrations on start) + nginx-served React app.
+# Usage: copy .env.example to .env, set the API keys and POSTGRES_PASSWORD, then `docker compose up -d --build`.
+name: gitpulse
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: gitpulse
+      POSTGRES_USER: gitpulse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gitpulse -d gitpulse"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file: .env
+    environment:
+      # Overrides the localhost value in .env so the API reaches the db service.
+      DATABASE_URL: postgresql+psycopg://gitpulse:${POSTGRES_PASSWORD}@db:5432/gitpulse
+      APP_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

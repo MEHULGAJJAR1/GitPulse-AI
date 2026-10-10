@@ -1,0 +1,14 @@
+version: 2
+sources:
+  - name: raw
+    description: Immutable raw JSON payloads written by the extract stage (GitHub REST or labelled synthetic).
+    schema: raw
+    tables:
+      - name: github_payloads
+        loaded_at_field: last_seen_at
+        freshness:
+          warn_after: {count: 2, period: day}
+          error_after: {count: 7, period: day}
+        columns:
+          - name: payload_hash
+            tests: [not_null]

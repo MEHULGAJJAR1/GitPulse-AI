@@ -1,0 +1,47 @@
+version: 2
+
+# Schema tests for staging models. Run with: dbt test --select staging
+# (The same invariants are also enforced by data_pipeline/gitpulse_elt/quality.py on every run.)
+
+models:
+  - name: stg_repositories
+    description: One row per repository, latest snapshot. Synthetic rows carry data_source = 'synthetic'.
+    columns:
+      - name: full_name
+        tests:
+          - not_null
+          - unique
+      - name: data_source
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['github', 'synthetic']
+
+  - name: stg_commits
+    description: One row per commit. SHA is unique within a repository.
+    columns:
+      - name: repo_full_name
+        tests: [not_null]
+      - name: sha
+        tests: [not_null]
+      - name: committed_at
+        tests: [not_null]
+      - name: data_source
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['github', 'synthetic']
+
+  - name: stg_issues
+    description: One row per issue or PR-as-issue in a repository.
+    columns:
+      - name: repo_full_name
+        tests: [not_null]
+      - name: number
+        tests: [not_null]
+      - name: state
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['open', 'closed']
